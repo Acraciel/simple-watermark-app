@@ -1,0 +1,19 @@
+@media (min-width: 768px) {
+  .main {
+    padding: 24px;
+  }
+
+  .drop-zone {
+    padding: 64px 32px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pill-group {
+    flex-direction: column;
+  }
+
+  .position-grid {
+    width: 100%;
+  }
+}

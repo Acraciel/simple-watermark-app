@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Watermark App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display&family=Dancing+Script&family=Satisfy&family=Pacifico&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Quicksand:wght@400;600&family=Nunito:wght@400;600&family=Roboto:wght@400;500&family=Inter:wght@400;500&family=Open+Sans:wght@400;600&family=Source+Sans+Pro:wght@400;600&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="header">
+        <h1 class="logo">Simple Watermark App</h1>
+    </header>
+
+    <main class="main">
+        <section class="upload-section">
+            <div id="dropZone" class="drop-zone">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span class="drop-zone-text">Selecciona una(s) imagen(es)</span>
+                <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
+            </div>
+            <div id="canvasContainer" class="canvas-container hidden">
+                <canvas id="previewCanvas"></canvas>
+            </div>
+            <div id="thumbnails" class="thumbnails hidden"></div>
+        </section>
+
+        <section class="controls-section">
+            <div class="control-group">
+                <label for="watermarkText">Tu texto</label>
+                <input type="text" id="watermarkText" placeholder="Tu nombre o firma" maxlength="50">
+            </div>
+
+            <div class="control-group">
+                <label>Tipo de marca de agua</label>
+                <div id="watermarkTypeGroup" class="pill-group">
+                    <button type="button" class="pill active" data-value="signature">Firma</button>
+                    <button type="button" class="pill" data-value="mosaic">Mosaico diagonal</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Posición</label>
+                <div id="positionControl" class="position-grid-container">
+                    <div id="positionGrid" class="position-grid">
+                        <button type="button" class="position-btn" data-position="top-left"></button>
+                        <button type="button" class="position-btn" data-position="top-center"></button>
+                        <button type="button" class="position-btn" data-position="top-right"></button>
+                        <button type="button" class="position-btn" data-position="middle-left"></button>
+                        <button type="button" class="position-btn" data-position="middle-center"></button>
+                        <button type="button" class="position-btn" data-position="middle-right"></button>
+                        <button type="button" class="position-btn" data-position="bottom-left"></button>
+                        <button type="button" class="position-btn" data-position="bottom-center"></button>
+                        <button type="button" class="position-btn active" data-position="bottom-right"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Opacidad</label>
+                <div id="opacityGroup" class="pill-group">
+                    <button type="button" class="pill" data-value="subtle">Sutil</button>
+                    <button type="button" class="pill active" data-value="moderate">Moderado</button>
+                    <button type="button" class="pill" data-value="pronounced">Pronunciado</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="fontCategory">Categoría de fuente</label>
+                <select id="fontCategory">
+                    <option value="cursive">Cursiva</option>
+                    <option value="professional">Profesional</option>
+                    <option value="neutral">Neutro</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="fontFamily">Familia de fuente</label>
+                <select id="fontFamily"></select>
+            </div>
+
+            <div class="control-group">
+                <label for="fontSize">Tamaño de fuente</label>
+                <div class="slider-input-group">
+                    <input type="range" id="fontSize" min="12" max="72" value="24">
+                    <input type="number" id="fontSizeInput" min="12" max="72" value="24">
+                </div>
+            </div>
+
+            <div class="control-group button-group">
+                <button type="button" id="downloadBtn" class="btn btn-primary" disabled>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Descargar
+                </button>
+                <button type="button" id="clearBtn" class="btn btn-secondary">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Limpiar todo
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
+    <footer class="footer">
+        Created by Acraciel 🤘
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
