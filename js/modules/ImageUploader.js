@@ -47,14 +47,19 @@ export default class ImageUploader {
     fileInput.addEventListener('change', () => {
       if (fileInput.files.length > 0) {
         this.handleFiles(Array.from(fileInput.files));
-        // Reset input to allow selecting the same files again
-        fileInput.value = '';
+        // Reset input on next tick so the change event fully completes first.
+        // Synchronous reset re-triggers the file picker on iOS WebKit and Brave.
+        setTimeout(() => { fileInput.value = ''; }, 0);
       }
     });
   }
 
   handleFiles(files) {
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    // Accepted MIME types. HEIC/HEIF allow iOS photos (default iOS format)
+    // to pass the filter; decoding still requires a browser with native HEIC
+    // support (e.g. iOS WebKit). Other browsers will hit the existing
+    // onerror handler in loadImage() and show a graceful error toast.
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     const validFiles = files.filter(file => validTypes.includes(file.type));
 
     if (validFiles.length === 0) {
