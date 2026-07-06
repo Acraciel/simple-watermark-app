@@ -46,10 +46,13 @@ export default class ImageUploader {
 
     fileInput.addEventListener('change', () => {
       if (fileInput.files.length > 0) {
-        this.handleFiles(Array.from(fileInput.files));
-        // Reset input on next tick so the change event fully completes first.
-        // Synchronous reset re-triggers the file picker on iOS WebKit and Brave.
-        setTimeout(() => { fileInput.value = ''; }, 0);
+        // Reset the input only AFTER the file(s) have been processed.
+        // By then the file picker has definitively closed, eliminating the
+        // one-shot re-open seen in Brave and the reset-during-change bug
+        // in iOS WebKit.
+        this.handleFiles(Array.from(fileInput.files)).then(() => {
+          fileInput.value = '';
+        });
       }
     });
   }
@@ -59,12 +62,19 @@ export default class ImageUploader {
     // to pass the filter; decoding still requires a browser with native HEIC
     // support (e.g. iOS WebKit). Other browsers will hit the existing
     // onerror handler in loadImage() and show a graceful error toast.
+    //
+    // Extension fallback covers iOS WebKit cases where file.type is empty
+    // or "application/octet-stream" for HEIC files.
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-    const validFiles = files.filter(file => validTypes.includes(file.type));
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+    const validFiles = files.filter(file =>
+      validTypes.includes(file.type) ||
+      validExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+    );
 
     if (validFiles.length === 0) {
       this.showToast('Formato no soportado. Usa JPG, PNG o WebP.');
-      return;
+      return Promise.resolve();
     }
 
     if (validFiles.length < files.length) {
@@ -73,7 +83,7 @@ export default class ImageUploader {
 
     const imagePromises = validFiles.map(file => this.loadImage(file));
 
-    Promise.all(imagePromises).then(images => {
+    return Promise.all(imagePromises).then(images => {
       this.images = images;
       this.onImagesLoaded(this.images);
     });
